@@ -10,7 +10,7 @@ def jumun(sum):
     key, su = input("메뉴 이름과 개수를 입력하시오(예시: 아메리카노 3) : ").split()
     for i in range(int(su)):
         naeyok.append(key)
-    sum += menu[key] * int(su)
+    sum += menu.get(key, 0) * int(su)
     a = input("다른 주문 메뉴 있으신가요? 예 아니오 : ")
     if  a == "예" :
         print("추가 주문을 진행합니다 \n")
@@ -39,7 +39,7 @@ ju = jumun(0)
 print(f"{ju}원입니다 고객님")
 
 dddon = don(ju)
-if dddon:
+if dddon is not False:
     print(f"잔액은 {dddon}원 입니다\n")
     youngsuzng()
 else :
