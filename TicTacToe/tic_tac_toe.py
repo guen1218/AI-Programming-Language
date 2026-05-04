@@ -1,6 +1,8 @@
 # 1. 자료구조 
-board_screen = ' 0 | 1 | 2 \n 3 | 4 | 5 \n 6 | 7 | 8\n'  #화면에 보여줄 보드
+import random
+board_screen = ' 0 | 1 | 2 \n 3 | 4 | 5 \n 6 | 7 | 8'  #화면에 보여줄 보드
 board = [" "] * 9 # 게임의 진행 상태
+border_blank=set(range(9))
 win_status = [(0,1,2), (3,4,5), (6,7,8),  # 이겼을 때의 상태
               (0,3,6), (1,4,7), (2,5,8),
               (0,4,8), (2,4,6)]
@@ -18,12 +20,16 @@ def updateGame(who, number):
         print("다시하세욧")
         return 0
     board[number] = who
+    border_blank.discard(number)
     board_screen = board_screen.replace(str(number), who)
 
 def GetComputerNumber():
-    for i in range (len(board)):
-        if board[i] == " ":
-            return i
+    # for i in range (len(board)):
+    #     if board[i] == " ":
+    #         return i
+    if border_blank:
+        # return border_blank.pop()
+        return random.choice(list(border_blank))
     return -1
 
 def isWin(turn):
@@ -41,8 +47,7 @@ while True:
     # 3-3. human 차례
     # human 입력 받아서 처리
     human_input = int(input('숫자를 입력하세요 : '))
-    if updateGame(human, human_input) == 0: 
-        continue
+    if updateGame(human, human_input) == 0: continue
     showbord()
 
     if isWin(human): 
@@ -55,6 +60,7 @@ while True:
     # computer가 놓을 자리를 선택
     computer_input = GetComputerNumber()
     updateGame(computer, computer_input)
+    print(">> 컴퓨터의 선택 :", computer_input)
     showbord()
     if isWin(computer) : 
         print("YOU LOOOOOOOOSSSSSSSSSSSSSSSSSSSE~~~~")
