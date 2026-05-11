@@ -1,4 +1,4 @@
-from bank import Account, AccountService
+from bank import AccountService
 
 #메뉴와 사용자 interaction에 따른 서비스 호출
 def select_menu():
