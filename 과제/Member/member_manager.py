@@ -1,18 +1,60 @@
-class MemberService:
-    def __init__(self):
-        self.mem_list = []
+from member import MemberService
+ms = MemberService
 
-    def create_mem(self, num, id, pas, name, pon, add):
-        self.mem_list.append(Member(num, id, pas, name, pon, add))
-class Member:
-    def __init__(self, num, id, pas, name, pon, add):
-        self.num = num
-        self.id = id
-        self.pas = pas
-        self.name = name
-        self.pon = pon
-        self.add = add
-    
-    def __str__(self):
-        return (f"[회원정보] 번호: {self.num} | 아이디: {self.id} | "
-                f"이름: {self.name} | 연락처: {self.pon} | 주소: {self.add}")
+while True:
+    print("="*10)
+    print("회원 관리")
+    print("="*30)
+    print("1. 회원가입")
+    print("2. 회원목록")
+    print("3. 상세정보조회")
+    print("4. 회원정보수정")
+    print("5. 회원탈퇴")
+    print("0. 프로그램 종료")
+    print("="*10)
+
+    choice = input("원하는 메뉴 번호를 입력하세요: ")
+    if choice == '1':
+        print("\n--- 회원 가입 ---")
+        num = input("번호: ")
+        id_ = input("아이디: ")
+        pas = input("비밀번호: ")
+        name = input("이름: ")
+        pon = input("전화번호: ")
+        add = input("주소: ")
+        ms.create_mem(num, id_, pas, name, pon, add)
+        print(f"[{name}] 가입 성공")
+
+    elif choice == '2':
+        ms.see_mem()
+
+    elif choice == '3':
+        name = input("조회할 이름을 입력하세요: ")
+        result = ms.super_see_mem(name)
+        if result:
+            print(result)
+        else:
+            print("누구세요")
+
+    elif choice == '4':
+        name = input("수정할 회원의 이름을 입력하세요: ")
+        item = input("수정할 항목(name, pon, add): ")
+        new_data = input("새로운 내용: ")
+        if ms.update_mem(name, item, new_data):
+            print("수정 성공")
+        else:
+            print("수정 실패")
+
+    elif choice == '5':
+        name = input("탈퇴할 회원의 이름을 입력하세요: ")
+        if ms.delete_mem(name):
+            print(f"{name}님 탈퇴")
+        else:
+            print("탈퇴 실패")
+
+    elif choice == '0':
+        print("프로그램 종료")
+        break
+
+    else:
+        print("다시하세요")
