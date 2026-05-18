@@ -7,7 +7,7 @@ def copy_image_file(file):
         with open(name+"_copy"+ext, 'wb') as fw:
             while True:
                 chunk = fr.read(buffer) # 4kb 만큼만 읽음
-
+                                        # 이렇게 하는 이유 : 램 혹사 안하려고
                 if not chunk:
                     break # 청크가 비어있으면(더이상 읽을 게 없다면(다 읽었다면)) break
 
