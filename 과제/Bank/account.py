@@ -50,3 +50,13 @@ class AccountService:
                 account.withdraw(amount)
                 break
 
+if __name__ == '__main__':
+    ass = AccountService()
+    ass.create_account('111-111', 'kkk', 5500)
+    print(ass.list_account())
+    alist = ass.list_account()
+    for accounnt in alist:
+        print (accounnt)
+    ass.deposit('111-111', 10000)
+    for a in alist:
+        print(a)

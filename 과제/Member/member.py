@@ -3,7 +3,11 @@ class MemberService:
         self.mem_list = []
 
     def create_mem(self, num, id, pas, name, pon, add):
+        for m in self.mem_list:
+            if m.num == num or m.id == id:
+                return False
         self.mem_list.append(Member(num, id, pas, name, pon, add))
+        return True
 
     def see_mem(self):
         for i in self.mem_list:
@@ -16,10 +20,12 @@ class MemberService:
         return False
     
     def update_mem(self, name, update, update_data):
+        updateList = ["id", "name", "pon", 'add']
         for i in self.mem_list:
             if i.name == name:
-                setattr(i, update, update_data)
-                return True
+                if update in updateList:
+                    setattr(i, update, update_data)
+                    return True
         return False
     
     def delete_mem(self, name):

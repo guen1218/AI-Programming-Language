@@ -1,8 +1,13 @@
 from hangman import Hangman
 
+def load_word_list():
+    word_list = ['apple', 'banana', 'man', 'woman', 'tomato']
+    return word_list
+
 print()
 print('='*10," Hangman ",'='*10)
-word_list = ['apple', 'banana', 'man', 'woman', 'tomato']
+
+word_list = load_word_list()
 
 hangman = Hangman(word_list)
 print(f'{hangman.display_word} {len(hangman.word)}글자')
