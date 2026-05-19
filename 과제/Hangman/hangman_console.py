@@ -1,7 +1,7 @@
 from hangman import Hangman
 
 def load_word_list():
-    file = 'voca.txt' 
+    file = r'과제\hangman\voca.txt' 
     word_list = []
     with open(file, 'r', encoding="utf-8") as f:
         for line in f:
