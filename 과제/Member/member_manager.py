@@ -55,7 +55,7 @@ def start_member_service(ms):
                 print("탈퇴 실패")
     
         elif choice == '0':
-        print("프로그램 종료")
+            print("프로그램 종료")
         break
 
     else:
