@@ -40,10 +40,29 @@ class MemberService:
             if password == member.get_password():
                 return id
         return None
-    
+
     def list_members(self):
         member_list = self.__dao.get_all_members()
         return member_list
+
+    def list_member_info(self, id):
+        member = self.__dao.get_member_info(id)
+        return member
+
+
+    def update_member_info(self, id, member):
+        update_menu = input("무엇을 바꾸시겠습니까 : 1. password 2. name : ")
+        if update_menu in ["1", "2"]:
+            update_data = input("무엇으로 바꾸시겠습니까? : ")
+            if self.__dao.update_member_info(id, update_menu, update_data):
+                return True
+        print("다시 시도해주세요")
+        return False
+
+    def remove_member(self, id):
+        if self.__dao.remove_member(id):
+            return True
+        else: return False
 
 #====================
 # 회원 데이터 접근 (CRUD) : MemberDAO
@@ -68,3 +87,22 @@ class MemberDAO:
         if self.__memberDB:
             return list(self.__memberDB.values())
     
+    def update_member_info(self, id, member, data):
+        members = self.get_member_info(id)
+        if not members:
+            return False
+        temp_password = members.get_password()
+        temp_name = members.get_name()
+        if member == "1":
+            temp_password = data
+        elif member == "2":
+            temp_name = data
+        self.__memberDB[id] = Member(id, temp_password, temp_name)
+        return True
+    
+    def remove_member(self, id):
+        member = self.get_member_info(id)
+        if not member:
+            return False
+        del self.__memberDB[id]
+        return True
