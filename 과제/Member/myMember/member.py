@@ -1,24 +1,49 @@
-#======================
-# 데이터 모델 정의 : Member
-class Member:
-    def __init__(self, id, password, name):
-        self.__member_no = 0
-        self.__id = id
-        self.__password = password
-        self.__name = name
+class MemberService:
+    def __init__(self):
+        self.mem_list = []
 
-    def get_member_no(self):
-        return self.__member_no
-    def get_id(self):
-        return self.__id
-    def get_password(self):
-        return self.__password
-    def get_name(self):
-        return self.__name
-    def set_id(self, id):
-        self.__id = id
-    def set_password(self, password):
-        self.__password = password
+    def create_mem(self, num, id, pas, name, pon, add):
+        for m in self.mem_list:
+            if m.num == num or m.id == id:
+                return False
+        self.mem_list.append(Member(num, id, pas, name, pon, add))
+        return True
+
+    def see_mem(self):
+        for i in self.mem_list:
+            print(i.num ,i.name)
+
+    def super_see_mem(self, name):
+        for i in self.mem_list:
+            if i.name == name:
+                return i
+        return False
+    
+    def update_mem(self, name, update, update_data):
+        updateList = ["id", "name", "pon", 'add']
+        for i in self.mem_list:
+            if i.name == name:
+                if update in updateList:
+                    setattr(i, update, update_data)
+                    return True
+        return False
+    
+    def delete_mem(self, name):
+        for i in self.mem_list:
+            if i.name == name:
+                self.mem_list.remove(i)
+                return True
+        return False
+    
+class Member:
+    def __init__(self, num, id, pas, name, pon, add):
+        self.num = num
+        self.id = id
+        self.pas = pas
+        self.name = name
+        self.pon = pon
+        self.add = add
     
     def __str__(self):
-        return f'{self.__member_no}\t{self.__id}\t{self.__name}\t{self.__password}'   
+        return (f"[회원정보] 번호: {self.num} | 아이디: {self.id} | "
+                f"이름: {self.name} | 연락처: {self.pon} | 주소: {self.add}")
