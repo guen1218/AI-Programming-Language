@@ -1,4 +1,4 @@
-from account import Account
+from Account.account import Account
 
 class AccountDAO:
     def __init__(self):

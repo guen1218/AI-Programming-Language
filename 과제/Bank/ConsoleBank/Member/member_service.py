@@ -1,5 +1,5 @@
-from member_dao import MemberDAO
-from member import Member
+from Member.member_dao import MemberDAO
+from Member.member import Member
 
 #==================
 # 회원 관리 서비스 로직 (Controller) : MemberService

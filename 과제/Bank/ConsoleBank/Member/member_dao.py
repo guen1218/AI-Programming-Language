@@ -1,4 +1,4 @@
-from member import Member
+from Member.member import Member
 #====================
 # 회원 데이터 접근 (CRUD) : MemberDAO
 class MemberDAO:
