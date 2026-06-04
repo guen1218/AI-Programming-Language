@@ -99,6 +99,7 @@ class ConsoleBank:
                 self.menu_delete_account()  # 계좌 삭제
             elif menu == 6:
                 if self.run_my_info_menu() == "backhome" :  # 내 정보 관리 메뉴 호출
+                    menu = -1
                     break
             else: 
                 print("다시하시오")
@@ -167,7 +168,7 @@ class ConsoleBank:
     
     def menu_delete_account(self): # 5 계좌해지
         print('>>>>계좌해지<<<<')
-        account_no = int(input("계좌번호 입력: "))
+        account_no = input("계좌번호 입력: ")
         password = input("계좌 비밀번호 입력 : ")
         try: 
             self.asv.delete_account(self.msv.current_user, account_no, password)
@@ -175,7 +176,7 @@ class ConsoleBank:
             print("계좌 찾기 실패")
         except KeyError:
             print("비번이 틀렸습니다")
-        except TypeError:
+        except ValueError:
             print("돈 다 빼세요")
         else:
             print("성공") 
@@ -197,6 +198,7 @@ class ConsoleBank:
                 self.menu_update_password()  # 비밀번호 변경
             elif menu == 2:
                 if self.menu_delete_membership() == "backhome" : # 회원 탈퇴
+                    menu -1
                     return "backhome"
             else: 
                 print("다시하시오")
@@ -283,8 +285,12 @@ class ConsoleBank:
             return
         print('>>>>회원 정보 조회<<<<')
         self.menu_list_members()
-        id = input(">> 조회할 회원 id 입력")
-        print(self.msv.view_member_info(id))
+        id = self.msv.view_member_info(input(">> 조회할 회원 id 입력"))
+        if id:
+            print(id)
+            return
+        print("회원이 존재하지 않습니다")
+        
 
     def menu_delete_member(self):
         if self.msv.current_user != MemberService.ADMIN_ID:
@@ -293,7 +299,9 @@ class ConsoleBank:
         print('>>>>회원 강퇴<<<<')
         self.menu_list_members()
         id = input(">> 강퇴할 회원 id 입력")
+        
         if self.msv.remove_member(id): 
+            self.asv.admin_delete_account(id)
             print("강퇴 성공~")
             return
         print("강퇴 실패")
@@ -338,10 +346,17 @@ class ConsoleBank:
         mem_account_list = self.msv.list_members()[1:]
         if mem_account_list:
             print('------------------------------------')
-            for account in mem_account_list:
-                name = account.get_name()
-                id = account.get_id()
-                print(f"{name}님의 계좌 : {self.asv.get_members_accounts(id)}")
+            for member in mem_account_list:
+                name = member.get_name()
+                id = member.get_id()
+                account_list = self.asv.get_members_accounts(id)
+                print(f"{name}님의 계좌 : ",end = ' ')
+                if account_list:
+                    for account in account_list:
+                        print(account, end = ' ')
+                else:
+                    print("Null",end='')
+                print()
             print('------------------------------------')
         else:
             print("계좌가 존재하지 않습니다.")

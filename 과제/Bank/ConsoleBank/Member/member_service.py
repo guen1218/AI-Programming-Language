@@ -5,7 +5,7 @@ from Member.member import Member
 # 회원 관리 서비스 로직 (Controller) : MemberService
 class MemberService:
     ADMIN_ID = 'admin'
-    ADMIN_PASSWORD = '1234'
+    ADMIN_PASSWORD = '123'
 
     def __init__(self, memberDao):
         self.__dao = memberDao
@@ -52,6 +52,7 @@ class MemberService:
         if not member: return False
         if member.get_password() == org_password:
             member.set_password(new_password)
+            self.__dao.update_member_info(id, member)
             return True
         return False
     

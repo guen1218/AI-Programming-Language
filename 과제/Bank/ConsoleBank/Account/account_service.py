@@ -56,6 +56,12 @@ class AccountService:
         
         return self.__dao.delete_account(account_no)
 
+    def admin_delete_account(self,id):
+        account_list = self.__dao.select_accounts_by_member_id(id)
+        if account_list:
+            for account in account_list:
+                self.__dao.delete_account(account.get_account_no())
+        
 if __name__ == '__main__':
     aservice = AccountService(AccountDAO())
     aservice.create_account(Account(0, 'hyejeong', 100000, '1234'))
