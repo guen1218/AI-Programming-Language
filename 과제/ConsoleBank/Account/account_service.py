@@ -58,9 +58,14 @@ class AccountService:
 
     def admin_delete_account(self,id):
         account_list = self.__dao.select_accounts_by_member_id(id)
+        delete_account_switch = 0
         if account_list:
             for account in account_list:
+                if self.get_account_balance(account.get_account_no()) > 0:
+                    account.set_balance(0) # 정식 서비스시 수정 예정
+                    delete_account_switch = 1
                 self.__dao.delete_account(account.get_account_no())
+        return delete_account_switch
         
 if __name__ == '__main__':
     aservice = AccountService(AccountDAO())

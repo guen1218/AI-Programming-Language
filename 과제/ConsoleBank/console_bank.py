@@ -299,9 +299,15 @@ class ConsoleBank:
         print('>>>>회원 강퇴<<<<')
         self.menu_list_members()
         id = input(">> 강퇴할 회원 id 입력")
+        if id == MemberService.ADMIN_ID:
+            print("관리자는 강퇴하실 수 없읍니다")
+            return
         
-        if self.msv.remove_member(id): 
-            self.asv.admin_delete_account(id)
+        if self.msv.view_member_info(id):
+            if self.msv.get_members_accounts(id):
+                if self.asv.admin_delete_account(id):
+                    print("남은 잔액은 알아서 다른 계좌로 보냈습니다")
+            self.msv.remove_member(id)
             print("강퇴 성공~")
             return
         print("강퇴 실패")
