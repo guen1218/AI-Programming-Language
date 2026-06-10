@@ -19,14 +19,11 @@ class MemberService:
         # if not self.is_valid_id(member.get_id()):
         #     return False
         
-        # 이미 있는 아이디인지 확인
-        if self.__dao.is_exist(member.get_id()):
-            return False
-        
-        self.__dao.insert_member(member)
-        return True
+        return self.__dao.insert_member(member)
 
     def login(self, id, password):
+        if self.__dao.is_banned(id):
+            return 'banned'
         member = self.__dao.get_member_info(id)
         if member:
             if password == member.get_password():
@@ -60,6 +57,9 @@ class MemberService:
         if self.current_user == id or self.current_user == MemberService.ADMIN_ID:
             return self.__dao.remove_member(id)
         return False
+
+    def kick_member(self, id):
+        return self.__dao.kick_member(id)
 
     # member_no로 회원 조회 (DeliveryService 연계용)
     def view_member_info_by_no(self, member_no):

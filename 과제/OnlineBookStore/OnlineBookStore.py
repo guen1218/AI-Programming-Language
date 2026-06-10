@@ -114,7 +114,10 @@ class BookShopApp:
         print('>>>>>>>> 로그인 <<<<<<<<<')
         id = input('아이디 : ')
         pw = input('비밀번호 : ')
-        if self.msv.login(id, pw):
+        result = self.msv.login(id, pw)
+        if result == 'banned':
+            print('강퇴당한 id입니다')
+        elif result:
             print(f'{self.msv.view_member_info(id).get_name()}님, 환영합니다.')
             member_no = self.msv.view_member_info(id).get_member_no()
             self.csv.create_cart(member_no)
@@ -130,7 +133,10 @@ class BookShopApp:
         name = input('이름 : ')
         id   = input('아이디 : ')
         pw   = input('비밀번호 : ')
-        if self.msv.join(Member(id, pw, name)):
+        result = self.msv.join(Member(id, pw, name))
+        if result == 'banned':
+            print('강퇴당한 id입니다')
+        elif result:
             print('회원가입 성공')
         else:
             print('회원가입 실패')
@@ -659,7 +665,7 @@ class BookShopApp:
             print('관리자는 강퇴할 수 없습니다')
             return
         if self.msv.view_member_info(id):
-            self.msv.remove_member(id)
+            self.msv.kick_member(id)
             print('강퇴 성공')
             return
         print('강퇴 실패')

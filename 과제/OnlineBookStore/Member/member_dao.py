@@ -5,8 +5,14 @@ class MemberDAO:
     def __init__(self):
         self.__memberDB = {}   # Key: id, Value: Member
         self.__next_no = 1
+        self.__banned_ids = set()  # 강퇴된 id 목록
+
+    def is_banned(self, id):
+        return id in self.__banned_ids
 
     def insert_member(self, member):
+        if self.is_banned(member.get_id()):
+            return 'banned'
         if self.is_exist(member.get_id()):
             return False
         member.set_member_no(self.__next_no)
@@ -37,6 +43,13 @@ class MemberDAO:
     def remove_member(self, id):
         if self.is_exist(id):
             self.__memberDB.pop(id)
+            return True
+        return False
+
+    def kick_member(self, id):
+        if self.is_exist(id):
+            self.__memberDB.pop(id)
+            self.__banned_ids.add(id)
             return True
         return False
     
