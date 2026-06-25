@@ -13,10 +13,11 @@ from Order.order_service import OrderService
 
 class ShoppingMallApp:
     # 비회원 메뉴
-    start_menu         = ['종료', '로그인', '회원가입', '견적 계산(비회원)']
+    start_menu         = ['종료', '로그인', '회원가입', '견적 계산(조회)']
     # 회원 메뉴
-    user_menu          = ['로그아웃', '견적내고 장바구니 담기', '장바구니 관리', '주문하기', '주문 내역 조회', '주문 취소', '내 정보 관리']
+    user_menu          = ['로그아웃', '견적내기', '장바구니 관리', '주문 내역 조회', '내 정보 관리']
     user_cart_menu     = ['뒤로가기', '장바구니 보기', '수량 변경', '장바구니 삭제', '주문하기']
+    user_order_menu    = ['뒤로가기', '주문 내역 조회', '주문 취소']
     user_myinfo_menu   = ['뒤로가기', '내 정보 조회', '내 정보 수정']
     user_update_menu   = ['취소', '전화번호 변경', '이메일 변경', '주소 변경']
     # 관리자 메뉴
@@ -35,8 +36,8 @@ class ShoppingMallApp:
         self.psv.init_product(5, 100)
 
         # 테스트 데이터
-        self.msv.join(Member('user1', '1234', '이근휘', '01011112222', 'user1@a.com', '서울시 강남구'))
-        self.msv.join(Member('user2', '1234', '홍길동'))
+        self.msv.join(Member('user1', '123', '이근휘', '01012345678', 'user1@a.com', '경기도 성남시'))
+        self.msv.join(Member('user2', '123', '이혜정'))
 
     def main(self):
         self.show_welcome()
@@ -86,8 +87,9 @@ class ShoppingMallApp:
         left = pad // 2
         return ' ' * left + str(s) + ' ' * (pad - left)
 
-    def select_menu(self, menu_list):
-        print(ShoppingMallApp.LINE)
+    def select_menu(self, menu_list, skip_top_line=False):
+        if not skip_top_line:
+            print(ShoppingMallApp.LINE)
         for index in range(1, len(menu_list)):
             print(f'{index}. {menu_list[index]}', end='   ')
         print(f'0. {menu_list[0]}')
@@ -215,12 +217,8 @@ class ShoppingMallApp:
             elif menu == 2:
                 self.run_cart_menu()
             elif menu == 3:
-                self.menu_create_order()
+                self.run_order_menu()
             elif menu == 4:
-                self.menu_view_my_orders()
-            elif menu == 5:
-                self.menu_cancel_order()
-            elif menu == 6:
                 self.run_myinfo_menu()
             else:
                 print('>> 잘못된 메뉴입니다. 다시 선택하세요.')
@@ -230,7 +228,7 @@ class ShoppingMallApp:
         return self.msv.view_member_info(self.msv.current_user).get_member_no()
 
     def menu_add_to_cart(self):
-        print('>>>> 견적내고 장바구니 담기 <<<<')
+        print('>>>> 견적내기<<<<')
         result = self.do_estimate()
         if not result:
             return
@@ -245,17 +243,19 @@ class ShoppingMallApp:
         print('>> 장바구니에 담았습니다.')
 
     def run_cart_menu(self):
-        print('>>>> 장바구니 관리 <<<<')
         while True:
-            menu = self.select_menu(ShoppingMallApp.user_cart_menu)
+            # 장바구니 내용을 먼저 보여주고, 바로 아래에 메뉴를 한 줄 구분선으로 출력
+            self.menu_view_cart()
+            menu = self.select_menu(ShoppingMallApp.user_cart_menu, skip_top_line=True)
             if menu == 0:
                 break
             elif menu == 1:
-                self.menu_view_cart()
+                # 이미 위에서 장바구니를 보여줬으므로 다시 출력하지 않고 메뉴 갱신
+                continue
             elif menu == 2:
-                self.menu_update_cart_item()
+                self.menu_update_cart_item(show_cart=False)
             elif menu == 3:
-                self.menu_delete_cart_item()
+                self.menu_delete_cart_item(show_cart=False)
             elif menu == 4:
                 self.menu_create_order()
             else:
@@ -266,6 +266,7 @@ class ShoppingMallApp:
         cart = self.csv.view_cart(self._current_member_no())
         if not cart or cart.is_empty():
             print('>> 장바구니가 비어 있습니다.')
+            print(ShoppingMallApp.LINE)
             return None
         print(ShoppingMallApp.LINE)
         print(self.center_k('항목', 6) + ' | ' + self.center_k('색상', 8) + ' | ' +
@@ -282,9 +283,15 @@ class ShoppingMallApp:
         print(ShoppingMallApp.LINE)
         return cart
 
-    def menu_delete_cart_item(self):
+    def menu_delete_cart_item(self, show_cart=True):
         print('>>>> 장바구니 삭제 <<<<')
-        if not self.menu_view_cart():
+        if show_cart:
+            cart = self.menu_view_cart()
+        else:
+            cart = self.csv.view_cart(self._current_member_no())
+        if not cart or cart.is_empty():
+            print('>> 장바구니가 비어 있습니다.')
+            print(ShoppingMallApp.LINE)
             return
         item_no = self.input_positive_int('>> 삭제할 항목 번호 : ')
         if item_no is None:
@@ -294,15 +301,20 @@ class ShoppingMallApp:
         else:
             print('>> 존재하지 않는 항목 번호입니다.')
 
-    def menu_update_cart_item(self):
+    def menu_update_cart_item(self, show_cart=True):
         print('>>>> 수량 변경 <<<<')
-        if not self.menu_view_cart():
+        if show_cart:
+            cart = self.menu_view_cart()
+        else:
+            cart = self.csv.view_cart(self._current_member_no())
+        if not cart or cart.is_empty():
+            print('>> 장바구니가 비어 있습니다.')
+            print(ShoppingMallApp.LINE)
             return
         item_no = self.input_positive_int('>> 변경할 항목 번호 : ')
         if item_no is None:
             return
         member_no = self._current_member_no()
-        cart = self.csv.view_cart(member_no)
         if not cart.get_item(item_no):
             print('>> 존재하지 않는 항목 번호입니다.')
             return
@@ -314,7 +326,6 @@ class ShoppingMallApp:
             return
         if self.csv.update_cart_item_qty(member_no, item_no, new_qty, self.psv.get_base_price()):
             print('>> 수량 변경 성공')
-            self.menu_view_cart()
         else:
             print('>> 수량 변경 실패')
 
@@ -334,7 +345,13 @@ class ShoppingMallApp:
 
         self.menu_view_cart()
         member = self.msv.view_member_info(self.msv.current_user)
+        phone = member.get_phone()
+        email = member.get_email()
         default_addr = member.get_address()
+
+        if not phone:
+            phone = input('>> 전화번호 : ').strip()
+
         address = input(f'>> 배송지 [{default_addr}] : ').strip()
         if not address:
             address = default_addr
@@ -345,16 +362,34 @@ class ShoppingMallApp:
         if confirm != 'y':
             return
 
+        if phone != member.get_phone() or address != member.get_address():
+            self.msv.update_member_info(self.msv.current_user, phone, email, address)
+
         self.psv.decrease_stock(total_qty)
         order = self.osv.create_order(member_no, cart.get_items(), cart.total(), address)
         self.csv.clear_cart(member_no)
         print(f'>> 주문 완료! 주문번호 {order.get_order_no()}')
+
+    def run_order_menu(self):
+        while True:
+            # 주문 내역을 먼저 보여주고, 바로 아래에 메뉴를 한 줄 구분선으로 출력
+            self.menu_view_my_orders()
+            menu = self.select_menu(ShoppingMallApp.user_order_menu, skip_top_line=True)
+            if menu == 0:
+                break
+            elif menu == 1:
+                continue
+            elif menu == 2:
+                self.menu_cancel_order(show_orders=False)
+            else:
+                print('>> 잘못된 메뉴입니다. 다시 선택하세요.')
 
     def menu_view_my_orders(self):
         print('>>>> 주문 내역 조회 <<<<')
         orders = self.osv.view_my_orders(self._current_member_no())
         if not orders:
             print('>> 주문 내역이 없습니다.')
+            print(ShoppingMallApp.LINE)
             return
         for order in orders:
             print(ShoppingMallApp.LINE)
@@ -363,14 +398,15 @@ class ShoppingMallApp:
                 print('   - ' + str(item))
         print(ShoppingMallApp.LINE)
 
-    def menu_cancel_order(self):
+    def menu_cancel_order(self, show_orders=True):
         print('>>>> 주문 취소 <<<<')
         member_no = self._current_member_no()
         orders = self.osv.view_my_orders(member_no)
         if not orders:
             print('>> 주문 내역이 없습니다.')
             return
-        self.menu_view_my_orders()
+        if show_orders:
+            self.menu_view_my_orders()
         order_no = self.input_positive_int('>> 취소할 주문 번호 : ')
         if order_no is None:
             return
@@ -392,13 +428,14 @@ class ShoppingMallApp:
             print('>> 주문 취소 실패')
 
     def run_myinfo_menu(self):
-        self.menu_view_myinfo()
         while True:
-            menu = self.select_menu(ShoppingMallApp.user_myinfo_menu)
+            # 내 정보를 먼저 보여주고, 바로 아래에 메뉴를 한 줄 구분선으로 출력
+            self.menu_view_myinfo()
+            menu = self.select_menu(ShoppingMallApp.user_myinfo_menu, skip_top_line=True)
             if menu == 0:
                 break
             elif menu == 1:
-                self.menu_view_myinfo()
+                continue
             elif menu == 2:
                 self.menu_update_myinfo()
             else:
@@ -443,13 +480,14 @@ class ShoppingMallApp:
         self.msv.logout()
 
     def run_admin_setting_menu(self):
-        print('>>>> 단가/재고 관리 <<<<')
         while True:
-            menu = self.select_menu(ShoppingMallApp.admin_setting_menu)
+            # 현재 단가/재고를 먼저 보여주고, 바로 아래에 메뉴를 한 줄 구분선으로 출력
+            self.menu_show_setting()
+            menu = self.select_menu(ShoppingMallApp.admin_setting_menu, skip_top_line=True)
             if menu == 0:
                 break
             elif menu == 1:
-                self.menu_show_setting()
+                continue
             elif menu == 2:
                 self.menu_change_price()
             elif menu == 3:
@@ -479,15 +517,16 @@ class ShoppingMallApp:
         print('>> 재고 변경 성공')
 
     def run_admin_member_menu(self):
-        print('>>>> 회원 관리 <<<<')
         while True:
-            menu = self.select_menu(ShoppingMallApp.admin_member_menu)
+            # 회원 목록을 먼저 보여주고, 바로 아래에 메뉴를 한 줄 구분선으로 출력
+            self.menu_list_members()
+            menu = self.select_menu(ShoppingMallApp.admin_member_menu, skip_top_line=True)
             if menu == 0:
                 break
             elif menu == 1:
-                self.menu_list_members()
+                continue
             elif menu == 2:
-                self.menu_view_member_detail()
+                self.menu_view_member_detail(show_list=False)
             else:
                 print('>> 잘못된 메뉴입니다. 다시 선택하세요.')
 
@@ -496,15 +535,17 @@ class ShoppingMallApp:
         members = [m for m in self.msv.list_members() if m.get_id() != MemberService.ADMIN_ID]
         if not members:
             print('>> 등록된 회원이 없습니다.')
+            print(ShoppingMallApp.LINE)
             return
         print(ShoppingMallApp.LINE)
         for m in members:
             print(m)
         print(ShoppingMallApp.LINE)
 
-    def menu_view_member_detail(self):
+    def menu_view_member_detail(self, show_list=True):
         print('>>>> 회원 정보 조회 <<<<')
-        self.menu_list_members()
+        if show_list:
+            self.menu_list_members()
         id = input('>> 조회할 회원 아이디 : ').strip()
         member = self.msv.view_member_info(id)
         if member and id != MemberService.ADMIN_ID:
@@ -515,15 +556,16 @@ class ShoppingMallApp:
             print('>> 회원이 존재하지 않습니다.')
 
     def run_admin_order_menu(self):
-        print('>>>> 주문 관리 <<<<')
         while True:
-            menu = self.select_menu(ShoppingMallApp.admin_order_menu)
+            # 전체 주문 목록을 먼저 보여주고, 바로 아래에 메뉴를 한 줄 구분선으로 출력
+            self.menu_list_all_orders()
+            menu = self.select_menu(ShoppingMallApp.admin_order_menu, skip_top_line=True)
             if menu == 0:
                 break
             elif menu == 1:
-                self.menu_list_all_orders()
+                continue
             elif menu == 2:
-                self.menu_update_order_status()
+                self.menu_update_order_status(show_orders=False)
             else:
                 print('>> 잘못된 메뉴입니다. 다시 선택하세요.')
 
@@ -532,6 +574,7 @@ class ShoppingMallApp:
         orders = self.osv.view_all_orders()
         if not orders:
             print('>> 주문이 없습니다.')
+            print(ShoppingMallApp.LINE)
             return None
         for order in orders:
             print(ShoppingMallApp.LINE)
@@ -541,9 +584,12 @@ class ShoppingMallApp:
         print(ShoppingMallApp.LINE)
         return orders
 
-    def menu_update_order_status(self):
+    def menu_update_order_status(self, show_orders=True):
         print('>>>> 배송 상태 변경 <<<<')
-        if not self.menu_list_all_orders():
+        if show_orders and not self.menu_list_all_orders():
+            return
+        if not show_orders and not self.osv.view_all_orders():
+            print('>> 주문이 없습니다.')
             return
         order_no = self.input_positive_int('>> 변경할 주문 번호 : ')
         if order_no is None:
@@ -568,6 +614,7 @@ class ShoppingMallApp:
             print('>> 상태 변경 성공')
         else:
             print('>> 상태 변경 실패')
+
 
 
 if __name__ == '__main__':
